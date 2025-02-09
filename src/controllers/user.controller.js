@@ -137,8 +137,8 @@ const logoutUser=asyncHandler(async(req,res)=>{
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{
-                refreshToken:undefined
+            $unset:{
+                refreshToken:1
             }
         },
         {
@@ -210,7 +210,7 @@ const changeCurrentPassword=asyncHandler(async(req,res)=>{
         throw new ApiError(401,"Invalid old password")
     }
     user.password=newPassword
-    user.save({validateBeforeSave:false})
+    await user.save({validateBeforeSave:false})
 
     return res
     .send(200)
@@ -229,7 +229,7 @@ const getCurrentUser=asyncHandler(async(req,res)=>{
 const updateUserEmail=asyncHandler(async(req,res)=>{
     const {email}=req.body
 
-    const user=User.findByIdAndUpdate(
+    const user=await User.findByIdAndUpdate(
         req.user._id,
         {
             $set:{
@@ -255,13 +255,13 @@ const updateUserAvatar=asyncHandler(async (req,res)=>{
         throw new ApiError(400,"avatar file is missing")
     }
 
-    const avatar=uploadOnCloudinary(avatartLocalPath)
+    const avatar=await uploadOnCloudinary(avatartLocalPath)
 
     if(!avatar){
         throw new ApiError(500,"failed to upload your new avatar")
     }
 
-    const user=User.findByIdAndUpdate(
+    const user=await User.findByIdAndUpdate(
         req.user._id,
         {
             $set:{
@@ -285,13 +285,13 @@ const updateUserCoverImage=asyncHandler(async (req,res)=>{
         throw new ApiError(400,"coverImage file is missing")
     }
 
-    const coverImage=uploadOnCloudinary(coverImageLocalPath)
+    const coverImage=await uploadOnCloudinary(coverImageLocalPath)
 
     if(!coverImage){
         throw new ApiError(500,"failed to upload your new cover image")
     }
 
-    const user=User.findByIdAndUpdate(
+    const user=await User.findByIdAndUpdate(
         req.user._id,
         {
             $set:{
@@ -378,14 +378,14 @@ const getUserChannelProfile=asyncHandler(async(req,res)=>{
 })
 
 const getWatchHistory=asyncHandler(async(req,res)=>{
-    const user=User.aggregate([
+    const user=await User.aggregate([
         {
-            $match:{
-                _id:new mongoose.Types.ObjectId(req.user._id)
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user?._id)
             }
         },{
             $lookup:{
-                from:"vedioes",
+                from:"videos",
                 localField:"watchHistory",
                 foreignField:"_id",
                 as:"watchHistory",
@@ -418,7 +418,6 @@ const getWatchHistory=asyncHandler(async(req,res)=>{
             }
         }
     ])
-
     return res
     .status(200)
     .json(

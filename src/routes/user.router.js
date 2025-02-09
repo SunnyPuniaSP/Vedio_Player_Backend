@@ -14,17 +14,17 @@ router.route('/register').post(upload.fields([
     }
 ]),registerUser)
 
-router.route('/login').post(loginUser)
+router.route('/login').post(loginUser) //only raw
 
 router.route('/logout').post(jwtverify, logoutUser)
 
 router.route('/refresh-token').post(refreshAccessToken)
 
-router.route('/change-password').post(jwtverify,changeCurrentPassword)
+router.route('/change-password').patch(jwtverify,changeCurrentPassword) // not working fine
 
 router.route('/current-user').get(jwtverify,getCurrentUser)
 
-router.route('/update-email').patch(jwtverify,updateUserEmail)
+router.route('/update-email').patch(jwtverify,updateUserEmail) // only raw
 
 router.route('/update-avatar').patch(jwtverify,upload.single("avatar"),updateUserAvatar)
 
